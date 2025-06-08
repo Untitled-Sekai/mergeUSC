@@ -23,15 +23,24 @@ jobs:
           override: true
           target: x86_64-unknown-linux-gnu
 
+      - name: Fix case-sensitive paths
+        run: |
+          if [ -d "crates/MergeUSC_Core" ]; then
+            echo "Using directory as is: MergeUSC_Core"
+          elif [ -d "crates/mergeUsc_Core" ]; then
+            echo "Directory exists with different case. Updating Cargo.toml..."
+            sed -i 's/path = "..\/MergeUSC_Core"/path = "..\/mergeUsc_Core"/' crates/cli/Cargo.toml
+          fi
+
       - name: Build
         run: |
-          cd crates/cli
-          cargo build --release
+          cargo build --release -p mergeusc_cli
 
       - name: Package
         run: |
           mkdir -p release
-          cp target/release/mergeusc_cli release/mergeusc_cli-linux
+          find ./target -name "mergeusc_cli" -type f -executable
+          cp ./target/release/mergeusc_cli release/mergeusc_cli-linux
           cd release && tar -czf mergeusc_cli-linux.tar.gz mergeusc_cli-linux
 
       - name: Upload artifact
@@ -57,13 +66,13 @@ jobs:
 
       - name: Build
         run: |
-          cd crates/cli
-          cargo build --release
+          cargo build --release -p mergeusc_cli
 
       - name: Package
         run: |
           mkdir -p release
-          copy target\release\mergeusc_cli.exe release\mergeusc_cli-windows.exe
+          Get-ChildItem -Path .\target -Recurse -Filter "*.exe" | Select-Object FullName
+          copy .\target\release\mergeusc_cli.exe release\mergeusc_cli-windows.exe
           cd release
           7z a -tzip mergeusc_cli-windows.zip mergeusc_cli-windows.exe
 
@@ -78,8 +87,6 @@ jobs:
     name: Create GitHub Release
     needs: [build-linux, build-windows]
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Download Linux artifact
         uses: actions/download-artifact@v4
