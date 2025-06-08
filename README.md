@@ -8,5 +8,5 @@
 ```
 Usage
 
-./mergeusc_cli <input_file> 
+./mergeusc_cli <input_file> <outputPath>
 ```
