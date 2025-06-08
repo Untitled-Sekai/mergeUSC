@@ -1,0 +1,102 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-linux:
+    name: Build for Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          target: x86_64-unknown-linux-gnu
+
+      - name: Build
+        run: |
+          cd crates/cli
+          cargo build --release
+
+      - name: Package
+        run: |
+          mkdir -p release
+          cp target/release/mergeusc_cli release/mergeusc_cli-linux
+          cd release && tar -czf mergeusc_cli-linux.tar.gz mergeusc_cli-linux
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mergeusc_cli-linux
+          path: release/mergeusc_cli-linux.tar.gz
+          retention-days: 1
+
+  build-windows:
+    name: Build for Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          target: x86_64-pc-windows-msvc
+
+      - name: Build
+        run: |
+          cd crates/cli
+          cargo build --release
+
+      - name: Package
+        run: |
+          mkdir -p release
+          copy target\release\mergeusc_cli.exe release\mergeusc_cli-windows.exe
+          cd release
+          7z a -tzip mergeusc_cli-windows.zip mergeusc_cli-windows.exe
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mergeusc_cli-windows
+          path: release/mergeusc_cli-windows.zip
+          retention-days: 1
+
+  create-release:
+    name: Create GitHub Release
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mergeusc_cli-linux
+          path: ./artifacts
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mergeusc_cli-windows
+          path: ./artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ github.ref_name }}
+          draft: true
+          files: |
+            ./artifacts/mergeusc_cli-linux.tar.gz
+            ./artifacts/mergeusc_cli-windows.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

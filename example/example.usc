@@ -1,0 +1,363 @@
+{
+    "usc": {
+        "objects": [
+            {
+                "beat": 0.0,
+                "bpm": 160.0,
+                "type": "bpm"
+            },
+            {
+                "changes": [
+                    {
+                        "beat": 11.25,
+                        "timeScale": 0.25
+                    },
+                    {
+                        "beat": 0.0,
+                        "timeScale": 1.0
+                    },
+                    {
+                        "beat": 10.0,
+                        "timeScale": 1.0
+                    },
+                    {
+                        "beat": 12.0,
+                        "timeScale": 1.0
+                    },
+                    {
+                        "beat": 11.0,
+                        "timeScale": 0.0
+                    },
+                    {
+                        "beat": 10.25,
+                        "timeScale": 0.75
+                    },
+                    {
+                        "beat": 10.5,
+                        "timeScale": 0.5
+                    },
+                    {
+                        "beat": 10.75,
+                        "timeScale": 0.25
+                    },
+                    {
+                        "beat": 11.5,
+                        "timeScale": 0.5
+                    },
+                    {
+                        "beat": 11.75,
+                        "timeScale": 0.75
+                    }
+                ],
+                "type": "timeScaleGroup"
+            },
+            {
+                "changes": [
+                    {
+                        "beat": 0.0,
+                        "timeScale": 1.0
+                    },
+                    {
+                        "beat": 18.0,
+                        "timeScale": 2.0
+                    },
+                    {
+                        "beat": 19.0,
+                        "timeScale": 1.0
+                    },
+                    {
+                        "beat": 18.25,
+                        "timeScale": 1.75
+                    },
+                    {
+                        "beat": 18.5,
+                        "timeScale": 1.5
+                    },
+                    {
+                        "beat": 18.75,
+                        "timeScale": 1.25
+                    }
+                ],
+                "type": "timeScaleGroup"
+            },
+            {
+                "beat": 4.0,
+                "critical": false,
+                "lane": -4.0,
+                "size": 2.0,
+                "timeScaleGroup": 0,
+                "trace": false,
+                "type": "single"
+            },
+            {
+                "beat": 5.0,
+                "critical": false,
+                "lane": 0.0,
+                "size": 2.0,
+                "timeScaleGroup": 0,
+                "trace": false,
+                "type": "single"
+            },
+            {
+                "beat": 6.0,
+                "critical": false,
+                "lane": -4.0,
+                "size": 2.0,
+                "timeScaleGroup": 0,
+                "trace": false,
+                "type": "single"
+            },
+            {
+                "beat": 7.0,
+                "critical": false,
+                "lane": 0.0,
+                "size": 2.0,
+                "timeScaleGroup": 0,
+                "trace": false,
+                "type": "single"
+            },
+            {
+                "beat": 8.0,
+                "critical": false,
+                "lane": -1.5,
+                "size": 1.5,
+                "timeScaleGroup": 0,
+                "trace": false,
+                "type": "single"
+            },
+            {
+                "beat": 10.0,
+                "critical": false,
+                "lane": -4.5,
+                "size": 1.5,
+                "timeScaleGroup": 0,
+                "trace": false,
+                "type": "single"
+            },
+            {
+                "beat": 12.0,
+                "critical": false,
+                "lane": 1.5,
+                "size": 1.5,
+                "timeScaleGroup": 0,
+                "trace": false,
+                "type": "single"
+            },
+            {
+                "beat": 14.0,
+                "critical": false,
+                "lane": 4.5,
+                "size": 1.5,
+                "timeScaleGroup": 0,
+                "trace": false,
+                "type": "single"
+            },
+            {
+                "beat": 15.0,
+                "critical": false,
+                "lane": -1.5,
+                "size": 1.5,
+                "timeScaleGroup": 0,
+                "trace": false,
+                "type": "single"
+            },
+            {
+                "beat": 17.0,
+                "critical": false,
+                "lane": -4.5,
+                "size": 1.5,
+                "timeScaleGroup": 0,
+                "trace": false,
+                "type": "single"
+            },
+            {
+                "beat": 18.0,
+                "critical": true,
+                "lane": -1.5,
+                "size": 1.5,
+                "timeScaleGroup": 0,
+                "trace": false,
+                "type": "single"
+            },
+            {
+                "beat": 18.5,
+                "critical": true,
+                "lane": 1.5,
+                "size": 1.5,
+                "timeScaleGroup": 0,
+                "trace": false,
+                "type": "single"
+            },
+            {
+                "beat": 19.0,
+                "critical": true,
+                "lane": -1.5,
+                "size": 1.5,
+                "timeScaleGroup": 0,
+                "trace": false,
+                "type": "single"
+            },
+            {
+                "beat": 19.5,
+                "critical": false,
+                "lane": 1.5,
+                "size": 1.5,
+                "timeScaleGroup": 0,
+                "trace": false,
+                "type": "single"
+            },
+            {
+                "beat": 22.5,
+                "critical": false,
+                "lane": 0.5,
+                "size": 1.5,
+                "timeScaleGroup": 1,
+                "trace": false,
+                "type": "single"
+            },
+            {
+                "connections": [
+                    {
+                        "beat": 20.0,
+                        "critical": false,
+                        "ease": "out",
+                        "judgeType": "normal",
+                        "lane": 0.0,
+                        "size": 1.0,
+                        "timeScaleGroup": 1,
+                        "type": "start"
+                    },
+                    {
+                        "beat": 21.0,
+                        "ease": "in",
+                        "lane": -5.0,
+                        "size": 1.0,
+                        "timeScaleGroup": 1,
+                        "type": "tick"
+                    },
+                    {
+                        "beat": 22.0,
+                        "critical": false,
+                        "judgeType": "normal",
+                        "lane": 0.0,
+                        "size": 1.0,
+                        "timeScaleGroup": 1,
+                        "type": "end"
+                    }
+                ],
+                "critical": false,
+                "type": "slide"
+            },
+            {
+                "connections": [
+                    {
+                        "beat": 8.0,
+                        "critical": false,
+                        "ease": "out",
+                        "judgeType": "normal",
+                        "lane": 4.5,
+                        "size": 1.5,
+                        "timeScaleGroup": 0,
+                        "type": "start"
+                    },
+                    {
+                        "beat": 10.0,
+                        "critical": false,
+                        "judgeType": "normal",
+                        "lane": 0.5,
+                        "size": 1.5,
+                        "timeScaleGroup": 0,
+                        "type": "end"
+                    }
+                ],
+                "critical": false,
+                "type": "slide"
+            },
+            {
+                "connections": [
+                    {
+                        "beat": 12.0,
+                        "critical": false,
+                        "ease": "out",
+                        "judgeType": "normal",
+                        "lane": -4.5,
+                        "size": 1.5,
+                        "timeScaleGroup": 0,
+                        "type": "start"
+                    },
+                    {
+                        "beat": 14.0,
+                        "critical": false,
+                        "judgeType": "normal",
+                        "lane": -0.5,
+                        "size": 1.5,
+                        "timeScaleGroup": 0,
+                        "type": "end"
+                    }
+                ],
+                "critical": false,
+                "type": "slide"
+            },
+            {
+                "connections": [
+                    {
+                        "beat": 15.0,
+                        "critical": false,
+                        "ease": "out",
+                        "judgeType": "normal",
+                        "lane": 4.5,
+                        "size": 1.5,
+                        "timeScaleGroup": 0,
+                        "type": "start"
+                    },
+                    {
+                        "beat": 17.0,
+                        "critical": false,
+                        "judgeType": "normal",
+                        "lane": 0.5,
+                        "size": 1.5,
+                        "timeScaleGroup": 0,
+                        "type": "end"
+                    }
+                ],
+                "critical": false,
+                "type": "slide"
+            },
+            {
+                "connections": [
+                    {
+                        "beat": 23.0,
+                        "critical": false,
+                        "ease": "out",
+                        "judgeType": "normal",
+                        "lane": 0.0,
+                        "size": 1.0,
+                        "timeScaleGroup": 1,
+                        "type": "start"
+                    },
+                    {
+                        "beat": 24.0,
+                        "ease": "in",
+                        "lane": 5.0,
+                        "size": 1.0,
+                        "timeScaleGroup": 1,
+                        "type": "tick"
+                    },
+                    {
+                        "beat": 25.0,
+                        "critical": false,
+                        "judgeType": "normal",
+                        "lane": 0.0,
+                        "size": 1.0,
+                        "timeScaleGroup": 1,
+                        "type": "end"
+                    }
+                ],
+                "critical": false,
+                "type": "slide"
+            }
+        ],
+        "offset": -0.0
+    },
+    "version": 2
+}
