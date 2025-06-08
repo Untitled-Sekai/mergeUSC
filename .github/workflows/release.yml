@@ -113,30 +113,12 @@ jobs:
 
       - name: Debug directory structure
         run: |
-          Get-ChildItem -Path ./crates -Recurse -Directory | Select-Object FullName
-
-      - name: Clean directory structure
-        run: |
-          # 既存のディレクトリを確認
-          if (Test-Path ./crates/mergeusc_core -PathType Container) {
-            Write-Output "Removing existing mergeusc_core directory"
-            Remove-Item ./crates/mergeusc_core -Force -Recurse
-          }
-
-      - name: Standardize directory structure
-        run: |
-          # コアライブラリのディレクトリ名を見つける
-          $coreDir = Get-ChildItem -Path ./crates -Directory | Where-Object { $_.Name -like "*merge*core*" } | Select-Object -First 1
+          # ディレクトリ構造の詳細確認
+          Write-Output "Current directory structure:"
+          Get-ChildItem -Path . -Recurse -Directory | Sort-Object FullName | ForEach-Object { Write-Output $_.FullName }
           
-          if ($null -eq $coreDir) {
-            Write-Error "Could not find core directory!"
-            exit 1
-          }
-          
-          Write-Output "Found core directory: $($coreDir.Name)"
-          
-          # 正規のディレクトリ名として小文字バージョンを使用
-          New-Item -Path ./crates -Name "mergeusc_core" -ItemType Junction -Target $coreDir.FullName -Force
+          Write-Output "`nSearching for core directories:"
+          Get-ChildItem -Path . -Recurse -Directory | Where-Object { $_.Name -match "merge|core" -or $_.Name -match "Merge|Core" } | ForEach-Object { Write-Output "$($_.FullName) - $($_.Name)" }
 
       - name: Create workspace Cargo.toml
         run: |
@@ -153,14 +135,43 @@ jobs:
           codegen-units = 1
           "@ | Set-Content -Path Cargo.toml -Encoding UTF8
 
-      - name: Update cli Cargo.toml
+      - name: Update paths directly
         run: |
-          # cliのCargo.tomlを更新
-          (Get-Content crates/cli/Cargo.toml) -replace 'path = "../MergeUSC_Core"', 'path = "../mergeusc_core"' | Set-Content crates/cli/Cargo.toml
+          # 明示的にパスを更新（ディレクトリ名検索を回避）
+          Write-Output "Updating dependency paths..."
+          
+          # 既知の可能性のあるパスを確認
+          $corePaths = @(
+            "./crates/MergeUSC_Core",
+            "./crates/mergeUsc_Core", 
+            "./crates/mergeusc_core"
+          )
+          
+          $validCorePath = $null
+          foreach ($path in $corePaths) {
+            if (Test-Path $path -PathType Container) {
+              $validCorePath = $path
+              Write-Output "Found core directory: $validCorePath"
+              break
+            }
+          }
+          
+          if ($null -eq $validCorePath) {
+            Write-Error "No core directory found in any expected location!"
+            exit 1
+          }
+          
+          # CLI の Cargo.toml を更新
+          $cliCargoContent = Get-Content crates/cli/Cargo.toml
+          $updatedContent = $cliCargoContent -replace 'path = "../MergeUSC_Core"', ('path = "..' + $validCorePath.Substring($validCorePath.LastIndexOf('/')) + '"')
+          $updatedContent | Set-Content crates/cli/Cargo.toml -Encoding UTF8
+          
+          Write-Output "Updated CLI Cargo.toml with core path: $validCorePath"
 
       - name: Build CLI
         run: |
-          # ルートディレクトリからビルド
+          # クレートのディレクトリに移動してからビルド
+          cd crates/cli
           cargo build --release
 
       - name: Find binary
@@ -171,10 +182,11 @@ jobs:
       - name: Package
         run: |
           New-Item -Path release -ItemType Directory -Force
-          # 生成されたバイナリを探して正しい場所にコピー
-          $binaryPath = (Get-ChildItem -Path . -Recurse -Filter "mergeusc_cli.exe" | Select-Object -First 1).FullName
-          if (-not $binaryPath) {
-            Write-Error "Binary not found!"
+          # バイナリの正確な場所を指定
+          $binaryPath = ".\crates\cli\target\release\mergeusc_cli.exe"
+          if (-not (Test-Path $binaryPath)) {
+            Write-Error "Binary not found at expected path: $binaryPath"
+            Get-ChildItem -Path . -Recurse -Filter "*.exe" | Select-Object FullName
             exit 1
           }
           Write-Output "Found binary at: $binaryPath"
