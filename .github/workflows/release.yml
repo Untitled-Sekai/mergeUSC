@@ -23,24 +23,52 @@ jobs:
           override: true
           target: x86_64-unknown-linux-gnu
 
-      - name: Fix case-sensitive paths
+      - name: Debug directory structure
         run: |
-          if [ -d "crates/MergeUSC_Core" ]; then
-            echo "Using directory as is: MergeUSC_Core"
-          elif [ -d "crates/mergeUsc_Core" ]; then
-            echo "Directory exists with different case. Updating Cargo.toml..."
-            sed -i 's/path = "..\/MergeUSC_Core"/path = "..\/mergeUsc_Core"/' crates/cli/Cargo.toml
+          find ./crates -type d | sort
+          ls -la ./crates
+
+      - name: Create workspace Cargo.toml if missing
+        run: |
+          if [ ! -f "Cargo.toml" ]; then
+            cat > Cargo.toml << 'EOF'
+          [workspace]
+          members = [
+              "crates/cli",
+              "crates/mergeUsc_Core"
+          ]
+
+          [profile.release]
+          opt-level = 3
+          lto = true
+          codegen-units = 1
+          EOF
+            echo "Created workspace Cargo.toml"
           fi
 
-      - name: Build
+      - name: Fix case-sensitive paths
         run: |
-          cargo build --release -p mergeusc_cli
+          CORE_DIR=$(find ./crates -maxdepth 1 -type d -iname "merge*core" | head -n 1)
+          if [ -z "$CORE_DIR" ]; then
+            echo "ERROR: Could not find core directory!"
+            exit 1
+          fi
+          
+          CORE_NAME=$(basename "$CORE_DIR")
+          echo "Found core directory: $CORE_NAME"
+          
+          sed -i "s|path = \"../MergeUSC_Core\"|path = \"../$CORE_NAME\"|" crates/cli/Cargo.toml
+          sed -i "s|\"crates/mergeUsc_Core\"|\"crates/$CORE_NAME\"|" Cargo.toml
+
+      - name: Build CLI
+        run: |
+          cargo build --release --bin mergeusc_cli
+          find ./target -name "mergeusc_cli" -type f -executable
 
       - name: Package
         run: |
           mkdir -p release
-          find ./target -name "mergeusc_cli" -type f -executable
-          cp ./target/release/mergeusc_cli release/mergeusc_cli-linux
+          cp $(find ./target -name "mergeusc_cli" -type f -executable | head -n 1) release/mergeusc_cli-linux
           cd release && tar -czf mergeusc_cli-linux.tar.gz mergeusc_cli-linux
 
       - name: Upload artifact
@@ -64,15 +92,38 @@ jobs:
           override: true
           target: x86_64-pc-windows-msvc
 
-      - name: Build
+      - name: Debug directory structure
         run: |
-          cargo build --release -p mergeusc_cli
+          Get-ChildItem -Path ./crates -Recurse -Directory | Select-Object FullName
+
+      - name: Create workspace Cargo.toml if missing
+        run: |
+          if (-Not (Test-Path "Cargo.toml")) {
+            @"
+          [workspace]
+          members = [
+              "crates/cli",
+              "crates/MergeUSC_Core"
+          ]
+
+          [profile.release]
+          opt-level = 3
+          lto = true
+          codegen-units = 1
+          "@ | Out-File -FilePath "Cargo.toml" -Encoding utf8
+            Write-Output "Created workspace Cargo.toml"
+          }
+
+      - name: Build CLI
+        run: |
+          cargo build --release --bin mergeusc_cli
+          Get-ChildItem -Path .\target -Recurse -Filter "mergeusc_cli.exe" | Select-Object FullName
 
       - name: Package
         run: |
-          mkdir -p release
-          Get-ChildItem -Path .\target -Recurse -Filter "*.exe" | Select-Object FullName
-          copy .\target\release\mergeusc_cli.exe release\mergeusc_cli-windows.exe
+          New-Item -Path release -ItemType Directory -Force
+          $binPath = (Get-ChildItem -Path .\target -Recurse -Filter "mergeusc_cli.exe" | Select-Object -First 1).FullName
+          Copy-Item $binPath -Destination release\mergeusc_cli-windows.exe
           cd release
           7z a -tzip mergeusc_cli-windows.zip mergeusc_cli-windows.exe
 
