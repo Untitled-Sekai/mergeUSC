@@ -75,11 +75,39 @@ impl UscMerger {
                         connections: adjusted_connections,
                         critical: *critical,
                     });
-                }                 
-                
-                _ => {
-                    result.usc.objects.push(object.clone());
+                }  
+
+                // Damage
+                UscObject::Damage { beat, lane, size, timeScaleGroup } => {
+                    result.usc.objects.push(UscObject::Damage {
+                        beat: *beat,
+                        lane: *lane,
+                        size: *size,
+                        timeScaleGroup: timeScaleGroup + time_scale_group_offset,
+                    });
+                } 
+
+                UscObject::Guide { color, fade, midpoints } => {
+                    let adjusted_midpoints = midpoints.iter()
+                        .map(|point| GuidePoint {
+                            beat: point.beat,
+                            ease: point.ease.clone(),
+                            lane: point.lane,
+                            size: point.size,
+                            timeScaleGroup: point.timeScaleGroup + time_scale_group_offset,
+                        })
+                        .collect();
+                    
+                    result.usc.objects.push(UscObject::Guide {
+                        color: color.clone(),
+                        fade: fade.clone(),
+                        midpoints: adjusted_midpoints,
+                    });
                 }
+
+                // _ => {
+                //     result.usc.objects.push(object.clone());
+                // }
             }
         }
 

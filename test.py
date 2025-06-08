@@ -1,11 +1,22 @@
 import requests
 import json
 
-with open('example/example.usc', 'r') as f1, open('example/example2.usc', 'r') as f2:
+with open('example/raputa.usc', 'r') as f1, open('example/a.usc', 'r') as f2:
     usc1 = json.load(f1)
     usc2 = json.load(f2)
 
-response = requests.post('http://localhost:3030/merge', json=[usc1, usc2])
+client_files = [
+    {
+        "filename": "raputa.usc",
+        "content": json.dumps(usc1)
+    },
+    {
+        "filename": "a.usc",
+        "content": json.dumps(usc2)
+    }
+]
+
+response = requests.post('http://localhost:3030/merge', json=client_files)
 
 if response.status_code == 200:
     merged_usc = response.json()
@@ -14,3 +25,4 @@ if response.status_code == 200:
     print("success")
 else:
     print(f"error: {response.status_code}")
+    print(f"エラー詳細: {response.text}")

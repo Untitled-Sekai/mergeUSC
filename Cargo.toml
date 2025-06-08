@@ -13,7 +13,7 @@ mergeusc_core = { path = "./crates/MergeUSC_Core" }
 [workspace]
 members = [
     "crates/cli",
-    "crates/mergeUsc_Core"
+    "crates/MergeUSC_Core"
 ]
 
 [profile.release]

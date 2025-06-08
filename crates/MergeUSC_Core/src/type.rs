@@ -13,6 +13,15 @@ pub struct UscData {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct GuidePoint {
+    pub beat: f64,
+    pub ease: String,
+    pub lane: f64,
+    pub size: f64,
+    pub timeScaleGroup: usize,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(tag = "type")]
 pub enum UscObject {
     #[serde(rename = "bpm")]
@@ -40,6 +49,21 @@ pub enum UscObject {
     Slide {
         connections: Vec<SlideConnection>,
         critical: bool,
+    },
+
+    #[serde(rename = "damage")]
+    Damage {
+        beat: f64,
+        lane: f64,
+        size: f64,
+        timeScaleGroup: usize, 
+    },
+
+    #[serde(rename = "guide")]
+    Guide {
+        color: String,
+        fade: String,
+        midpoints: Vec<GuidePoint>,
     },
 }
 

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MergeUsc - USCファイル結合ツール</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            color: #333;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+        }
+
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .file-input {
+            margin-bottom: 1rem;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        #file-list {
+            margin-top: 1rem;
+        }
+
+        .file-item {
+            background-color: #eee;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .remove-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        .alert-success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
+        #result-area {
+            margin-top: 2rem;
+        }
+
+        #download-btn {
+            margin-top: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>MergeUsc - USCファイル結合ツール</h1>
+        <p>MergeUSCのウェブバージョンです。</p>
+        <div id="status-message"></div>
+
+        <div class="form-group">
+            <label for="file-upload">マージするUSCファイルを選択</label>
+            <input type="file" id="file-upload" class="file-input" accept=".usc" multiple>
+            <div id="file-list"></div>
+        </div>
+
+        <button id="merge-btn" disabled>マージ実行</button>
+
+        <div id="result-area"></div>
+        <button id="download-btn">マージ結果をダウンロード</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const fileUpload = document.getElementById('file-upload');
+            const fileList = document.getElementById('file-list');
+            const mergeBtn = document.getElementById('merge-btn');
+            const resultArea = document.getElementById('result-area');
+            const downloadBtn = document.getElementById('download-btn');
+            const statusMessage = document.getElementById('status-message');
+
+            const files = [];
+
+            fileUpload.addEventListener('change', (event) => {
+                const selectedFiles = Array.from(event.target.files);
+
+                selectedFiles.forEach(file => {
+                    if (file.name.endsWith('.usc')) {
+                        files.push(file);
+
+                        const fileItem = document.createElement('div');
+                        fileItem.className = 'file-item';
+                        fileItem.innerHTML = `
+                            <span>${file.name} (${formatFileSize(file.size)})</span>
+                            <button class="remove-btn" data-name="${file.name}">削除</button>
+                        `;
+                        fileList.appendChild(fileItem);
+                    }
+                });
+
+                updateMergeButtonState();
+                fileUpload.value = '';
+            });
+
+            fileList.addEventListener('click', (event) => {
+                if (event.target.classList.contains('remove-btn')) {
+                    const fileName = event.target.dataset.name;
+                    const index = files.findIndex(f => f.name === fileName);
+
+                    if (index !== -1) {
+                        files.splice(index, 1);
+                        event.target.parentElement.remove();
+                        updateMergeButtonState();
+                    }
+                }
+            });
+
+            mergeBtn.addEventListener('click', async () => {
+                if (files.length < 2) {
+                    showMessage('マージには少なくとも2つのファイルが必要です', 'error');
+                    return;
+                }
+
+                try {
+                    showMessage('マージ中...', 'info');
+                    mergeBtn.disabled = true;
+
+                    const fileContents = await Promise.all(files.map(readFileAsText));
+                    const requestData = files.map((file, index) => ({
+                        filename: file.name,
+                        content: fileContents[index]
+                    }));
+
+                    const response = await fetch('http://localhost:3030/merge', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(requestData)
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`エラー: ${response.status} ${response.statusText} - ${errorText}`);
+                    }
+
+                    const result = await response.json();
+
+                    if (!result.content) {
+                        throw new Error('マージ結果のコンテンツがありません');
+                    }
+
+                    resultArea.innerHTML = `<h3>マージ成功</h3>
+                    <p>${files.length}個のファイルのマージが完了しました。</p>
+                    <p>以下のボタンからマージ結果をダウンロードできます。</p>`;
+
+                    downloadBtn.style.display = 'block';
+                    downloadBtn.onclick = () => {
+                        const blob = new Blob([result.content], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = result.filename || 'merged.usc';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    };
+
+                    showMessage('マージが完了しました！', 'success');
+                } catch (error) {
+                    showMessage(`エラーが発生しました: ${error.message}`, 'error');
+                } finally {
+                    mergeBtn.disabled = false;
+                }
+            });
+
+            function updateMergeButtonState() {
+                mergeBtn.disabled = files.length < 2;
+            }
+
+            function readFileAsText(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = () => reject(new Error(`${file.name}の読み込みに失敗しました`));
+                    reader.readAsText(file);
+                });
+            }
+
+            function formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' bytes';
+                else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+                else return (bytes / 1048576).toFixed(1) + ' MB';
+            }
+
+            function showMessage(message, type) {
+                statusMessage.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            }
+        });
+    </script>
+</body>
+
+</html>
