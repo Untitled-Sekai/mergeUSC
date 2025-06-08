@@ -28,47 +28,54 @@ jobs:
           find ./crates -type d | sort
           ls -la ./crates
 
-      - name: Create workspace Cargo.toml if missing
+      - name: Standardize directory structure
         run: |
-          if [ ! -f "Cargo.toml" ]; then
-            cat > Cargo.toml << 'EOF'
+          # コアライブラリの実際のディレクトリ名を見つける
+          CORE_DIR=$(find ./crates -maxdepth 1 -type d -iname "merge*core" | head -n 1)
+          if [ -z "$CORE_DIR" ]; then
+            echo "ERROR: Could not find core directory!"
+            exit 1
+          fi
+          CORE_NAME=$(basename "$CORE_DIR")
+          echo "Found core directory: $CORE_NAME"
+          
+          # 統一したディレクトリ名を使用する
+          STANDARD_CORE_NAME="mergeusc_core"
+          if [ "$CORE_NAME" != "$STANDARD_CORE_NAME" ]; then
+            echo "Creating symbolic link from $CORE_NAME to $STANDARD_CORE_NAME"
+            ln -sf "$CORE_NAME" "./crates/$STANDARD_CORE_NAME"
+          fi
+
+      - name: Create workspace Cargo.toml
+        run: |
+          cat > Cargo.toml << 'EOF'
           [workspace]
           members = [
-              "crates/cli",
-              "crates/mergeUsc_Core"
+              "crates/cli"
           ]
+          resolver = "2"
 
           [profile.release]
           opt-level = 3
           lto = true
           codegen-units = 1
           EOF
-            echo "Created workspace Cargo.toml"
-          fi
+          echo "Created workspace Cargo.toml"
 
-      - name: Fix case-sensitive paths
+      - name: Update cli Cargo.toml
         run: |
-          CORE_DIR=$(find ./crates -maxdepth 1 -type d -iname "merge*core" | head -n 1)
-          if [ -z "$CORE_DIR" ]; then
-            echo "ERROR: Could not find core directory!"
-            exit 1
-          fi
-          
-          CORE_NAME=$(basename "$CORE_DIR")
-          echo "Found core directory: $CORE_NAME"
-          
-          sed -i "s|path = \"../MergeUSC_Core\"|path = \"../$CORE_NAME\"|" crates/cli/Cargo.toml
-          sed -i "s|\"crates/mergeUsc_Core\"|\"crates/$CORE_NAME\"|" Cargo.toml
+          # cliのCargo.tomlを更新して確実にビルドできるようにする
+          sed -i 's|path = "../MergeUSC_Core"|path = "../mergeusc_core"|' crates/cli/Cargo.toml
 
       - name: Build CLI
         run: |
-          cargo build --release --bin mergeusc_cli
-          find ./target -name "mergeusc_cli" -type f -executable
+          cd crates/cli
+          cargo build --release
 
       - name: Package
         run: |
           mkdir -p release
-          cp $(find ./target -name "mergeusc_cli" -type f -executable | head -n 1) release/mergeusc_cli-linux
+          cp crates/cli/target/release/mergeusc_cli release/mergeusc_cli-linux
           cd release && tar -czf mergeusc_cli-linux.tar.gz mergeusc_cli-linux
 
       - name: Upload artifact
@@ -96,34 +103,56 @@ jobs:
         run: |
           Get-ChildItem -Path ./crates -Recurse -Directory | Select-Object FullName
 
-      - name: Create workspace Cargo.toml if missing
+      - name: Standardize directory structure
         run: |
-          if (-Not (Test-Path "Cargo.toml")) {
-            @"
+          # Windowsでの大文字小文字の問題を解決
+          $coreDir = Get-ChildItem -Path ./crates -Directory | Where-Object { $_.Name -like "*merge*core*" } | Select-Object -First 1
+          
+          if ($null -eq $coreDir) {
+            Write-Error "Could not find core directory!"
+            exit 1
+          }
+          
+          Write-Output "Found core directory: $($coreDir.Name)"
+          
+          # 正規のディレクトリ名として小文字バージョンを使用
+          New-Item -Path ./crates -Name "mergeusc_core" -ItemType Junction -Target $coreDir.FullName -Force
+          
+          # ワークスペースがクリーンであることを確認
+          if (Test-Path ./crates/MergeUSC_Core -PathType Container) {
+            Write-Output "Removing MergeUSC_Core directory from workspace members"
+            Remove-Item ./crates/MergeUSC_Core -Force -Recurse
+          }
+
+      - name: Create workspace Cargo.toml
+        run: |
+          @"
           [workspace]
           members = [
-              "crates/cli",
-              "crates/MergeUSC_Core"
+              "crates/cli"
           ]
+          resolver = "2"
 
           [profile.release]
           opt-level = 3
           lto = true
           codegen-units = 1
-          "@ | Out-File -FilePath "Cargo.toml" -Encoding utf8
-            Write-Output "Created workspace Cargo.toml"
-          }
+          "@ | Set-Content -Path Cargo.toml -Encoding UTF8
+
+      - name: Update cli Cargo.toml
+        run: |
+          # cliのCargo.tomlを更新
+          (Get-Content crates/cli/Cargo.toml) -replace 'path = "../MergeUSC_Core"', 'path = "../mergeusc_core"' | Set-Content crates/cli/Cargo.toml
 
       - name: Build CLI
         run: |
-          cargo build --release --bin mergeusc_cli
-          Get-ChildItem -Path .\target -Recurse -Filter "mergeusc_cli.exe" | Select-Object FullName
+          cd crates/cli
+          cargo build --release
 
       - name: Package
         run: |
           New-Item -Path release -ItemType Directory -Force
-          $binPath = (Get-ChildItem -Path .\target -Recurse -Filter "mergeusc_cli.exe" | Select-Object -First 1).FullName
-          Copy-Item $binPath -Destination release\mergeusc_cli-windows.exe
+          Copy-Item crates/cli/target/release/mergeusc_cli.exe -Destination release/mergeusc_cli-windows.exe
           cd release
           7z a -tzip mergeusc_cli-windows.zip mergeusc_cli-windows.exe
 
