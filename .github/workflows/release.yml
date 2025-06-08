@@ -69,13 +69,25 @@ jobs:
 
       - name: Build CLI
         run: |
-          cd crates/cli
+          # ルートディレクトリからビルド
           cargo build --release
+
+      - name: Find binary
+        run: |
+          # ビルドされたバイナリを探索
+          find . -name "mergeusc_cli" -type f -executable
 
       - name: Package
         run: |
           mkdir -p release
-          cp crates/cli/target/release/mergeusc_cli release/mergeusc_cli-linux
+          # find コマンドでバイナリを見つけてコピー
+          BINARY_PATH=$(find . -name "mergeusc_cli" -type f -executable | head -n 1)
+          if [ -z "$BINARY_PATH" ]; then
+            echo "ERROR: Binary not found!"
+            exit 1
+          fi
+          echo "Found binary at: $BINARY_PATH"
+          cp "$BINARY_PATH" release/mergeusc_cli-linux
           cd release && tar -czf mergeusc_cli-linux.tar.gz mergeusc_cli-linux
 
       - name: Upload artifact
@@ -103,9 +115,17 @@ jobs:
         run: |
           Get-ChildItem -Path ./crates -Recurse -Directory | Select-Object FullName
 
+      - name: Clean directory structure
+        run: |
+          # 既存のディレクトリを確認
+          if (Test-Path ./crates/mergeusc_core -PathType Container) {
+            Write-Output "Removing existing mergeusc_core directory"
+            Remove-Item ./crates/mergeusc_core -Force -Recurse
+          }
+
       - name: Standardize directory structure
         run: |
-          # Windowsでの大文字小文字の問題を解決
+          # コアライブラリのディレクトリ名を見つける
           $coreDir = Get-ChildItem -Path ./crates -Directory | Where-Object { $_.Name -like "*merge*core*" } | Select-Object -First 1
           
           if ($null -eq $coreDir) {
@@ -117,12 +137,6 @@ jobs:
           
           # 正規のディレクトリ名として小文字バージョンを使用
           New-Item -Path ./crates -Name "mergeusc_core" -ItemType Junction -Target $coreDir.FullName -Force
-          
-          # ワークスペースがクリーンであることを確認
-          if (Test-Path ./crates/MergeUSC_Core -PathType Container) {
-            Write-Output "Removing MergeUSC_Core directory from workspace members"
-            Remove-Item ./crates/MergeUSC_Core -Force -Recurse
-          }
 
       - name: Create workspace Cargo.toml
         run: |
@@ -146,13 +160,25 @@ jobs:
 
       - name: Build CLI
         run: |
-          cd crates/cli
+          # ルートディレクトリからビルド
           cargo build --release
+
+      - name: Find binary
+        run: |
+          # ビルドされたバイナリを探索
+          Get-ChildItem -Path . -Recurse -Filter "mergeusc_cli.exe" | Select-Object FullName
 
       - name: Package
         run: |
           New-Item -Path release -ItemType Directory -Force
-          Copy-Item crates/cli/target/release/mergeusc_cli.exe -Destination release/mergeusc_cli-windows.exe
+          # 生成されたバイナリを探して正しい場所にコピー
+          $binaryPath = (Get-ChildItem -Path . -Recurse -Filter "mergeusc_cli.exe" | Select-Object -First 1).FullName
+          if (-not $binaryPath) {
+            Write-Error "Binary not found!"
+            exit 1
+          }
+          Write-Output "Found binary at: $binaryPath"
+          Copy-Item $binaryPath -Destination release/mergeusc_cli-windows.exe
           cd release
           7z a -tzip mergeusc_cli-windows.zip mergeusc_cli-windows.exe
 
