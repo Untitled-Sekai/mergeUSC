@@ -182,8 +182,8 @@ jobs:
       - name: Package
         run: |
           New-Item -Path release -ItemType Directory -Force
-          # バイナリの正確な場所を指定
-          $binaryPath = ".\crates\cli\target\release\mergeusc_cli.exe"
+          # Find Binary ステップで確認したパスを使用
+          $binaryPath = ".\target\release\mergeusc_cli.exe"
           if (-not (Test-Path $binaryPath)) {
             Write-Error "Binary not found at expected path: $binaryPath"
             Get-ChildItem -Path . -Recurse -Filter "*.exe" | Select-Object FullName
