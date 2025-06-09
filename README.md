@@ -6,7 +6,9 @@
 [release](https://github.com/Untitled-Sekai/mergeUSC/releases)から、最新のバイナリをダウンロードし、コマンドプロンプトなどで実行してださい。
 
 ```
-Usage
-
-./mergeusc_cli <input_file> -o <outputPath>
+Options:
+  -o, --output <OUTPUT>
+  -v, --verbose          detail
+  -h, --help             Print help
+  -V, --version          Print version
 ```
