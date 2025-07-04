@@ -101,12 +101,12 @@ pub struct SlideConnection {
 // レーンイベントの定義
 // まだエンジン側で実装されていないためコメントアウト
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct LaneEvent {
-    pub beat: f64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub alpha: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-　　pub rolation: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-}
+// #[derive(Clone, Debug, Deserialize, Serialize)]
+// pub struct LaneEvent {
+//     pub beat: f64,
+//     #[serde(skip_serializing_if = "Option::is_none")]
+//     pub alpha: Option<f64>,
+//     #[serde(skip_serializing_if = "Option::is_none")]
+// 　　pub rolation: Option<f64>,
+//     #[serde(skip_serializing_if = "Option::is_none")]
+// }
