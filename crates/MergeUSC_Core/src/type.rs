@@ -65,6 +65,15 @@ pub enum UscObject {
         fade: String,
         midpoints: Vec<GuidePoint>,
     },
+
+    // レーンイベント　未実装 
+
+    // #[serde(rename = "laneEvent")]
+    // LaneEvent {
+    //     beat: f64,
+    //     alpha: Option<f64>,
+    //     rolation: Option<f64>,
+    // },
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -87,4 +96,17 @@ pub struct SlideConnection {
     pub timeScaleGroup: usize,
     #[serde(rename = "type")]
     pub r#type: String,
+}
+
+// レーンイベントの定義
+// まだエンジン側で実装されていないためコメントアウト
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct LaneEvent {
+    pub beat: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub alpha: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+　　pub rolation: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
 }
