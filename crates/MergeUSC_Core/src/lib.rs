@@ -45,10 +45,11 @@ impl UscMerger {
                 }
 
                 // single note
-                UscObject::Single { beat, critical, lane, size, timeScaleGroup, trace } => {
+                UscObject::Single { beat, critical, direction, lane, size, timeScaleGroup, trace } => {
                     result.usc.objects.push(UscObject::Single {
                         beat: *beat,
                         critical: *critical,
+                        direction: direction.clone(),
                         lane: *lane,
                         size: *size,
                         timeScaleGroup: timeScaleGroup + time_scale_group_offset,
@@ -62,6 +63,7 @@ impl UscMerger {
                         .map(|conn| SlideConnection {
                             beat: conn.beat,
                             critical: conn.critical,
+                            direction: conn.direction.clone(),
                             ease: conn.ease.clone(),
                             judgeType: conn.judgeType.clone(),
                             lane: conn.lane,

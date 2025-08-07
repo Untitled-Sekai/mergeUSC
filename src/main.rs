@@ -64,7 +64,7 @@ async fn main() {
         .with(warp::log("api"));
     
     println!("Server started at http://localhost:3030");
-    warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
+    warp::serve(routes).run(([0, 0, 0, 0], 3030)).await;
 }
 
 async fn handle_merge(files: Vec<UscFile>) -> Result<impl Reply, Rejection> {

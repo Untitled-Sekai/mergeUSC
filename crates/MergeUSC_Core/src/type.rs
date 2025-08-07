@@ -39,6 +39,8 @@ pub enum UscObject {
     Single {
         beat: f64,
         critical: bool,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        direction: Option<String>,
         lane: f64,
         size: f64,
         timeScaleGroup: usize,
@@ -78,6 +80,8 @@ pub struct SlideConnection {
     pub beat: f64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub critical: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub direction: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ease: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]

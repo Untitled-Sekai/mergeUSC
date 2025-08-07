@@ -173,6 +173,7 @@
             {
                 "beat": 18.0,
                 "critical": true,
+                "direction": "up",
                 "lane": -1.5,
                 "size": 1.5,
                 "timeScaleGroup": 0,
@@ -212,6 +213,26 @@
                 "lane": 0.5,
                 "size": 1.5,
                 "timeScaleGroup": 1,
+                "trace": false,
+                "type": "single"
+            },
+            {
+                "beat": 19.5,
+                "critical": false,
+                "direction": "left",
+                "lane": -4.5,
+                "size": 1.5,
+                "timeScaleGroup": 0,
+                "trace": false,
+                "type": "single"
+            },
+            {
+                "beat": 19.5,
+                "critical": false,
+                "direction": "left",
+                "lane": -1.5,
+                "size": 1.5,
+                "timeScaleGroup": 0,
                 "trace": false,
                 "type": "single"
             },
@@ -277,7 +298,7 @@
                 "connections": [
                     {
                         "beat": 12.0,
-                        "critical": false,
+                        "critical": true,
                         "ease": "out",
                         "judgeType": "normal",
                         "lane": -4.5,
@@ -287,7 +308,8 @@
                     },
                     {
                         "beat": 14.0,
-                        "critical": false,
+                        "critical": true,
+                        "direction": "left",
                         "judgeType": "normal",
                         "lane": -0.5,
                         "size": 1.5,
@@ -295,7 +317,7 @@
                         "type": "end"
                     }
                 ],
-                "critical": false,
+                "critical": true,
                 "type": "slide"
             },
             {
@@ -313,6 +335,7 @@
                     {
                         "beat": 17.0,
                         "critical": false,
+                        "direction": "right",
                         "judgeType": "normal",
                         "lane": 0.5,
                         "size": 1.5,
