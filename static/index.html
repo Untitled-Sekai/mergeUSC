@@ -109,6 +109,21 @@
             margin-top: 1rem;
             display: none;
         }
+
+        .drop-area {
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            color: #3498db;
+            margin-bottom: 1rem;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .drop-area.dragover {
+            background: #e3f2fd;
+            border-color: #2980b9;
+        }
     </style>
 </head>
 
@@ -120,6 +135,9 @@
 
         <div class="form-group">
             <label for="file-upload">マージするUSCファイルを選択</label>
+            <div id="drop-area" class="drop-area">
+                ここにUSCファイルをドラッグ＆ドロップ
+            </div>
             <input type="file" id="file-upload" class="file-input" accept=".usc" multiple>
             <div id="file-list"></div>
         </div>
@@ -138,16 +156,34 @@
             const resultArea = document.getElementById('result-area');
             const downloadBtn = document.getElementById('download-btn');
             const statusMessage = document.getElementById('status-message');
-
+            const dropArea = document.getElementById('drop-area');
             const files = [];
+
+            dropArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropArea.classList.add('dragover');
+            });
+            dropArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropArea.classList.remove('dragover');
+            });
+            dropArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropArea.classList.remove('dragover');
+                const droppedFiles = Array.from(e.dataTransfer.files);
+                handleFiles(droppedFiles);
+            });
 
             fileUpload.addEventListener('change', (event) => {
                 const selectedFiles = Array.from(event.target.files);
+                handleFiles(selectedFiles);
+                fileUpload.value = '';
+            });
 
+            function handleFiles(selectedFiles) {
                 selectedFiles.forEach(file => {
-                    if (file.name.endsWith('.usc')) {
+                    if (file.name.endsWith('.usc') && !files.some(f => f.name === file.name && f.size === file.size)) {
                         files.push(file);
-
                         const fileItem = document.createElement('div');
                         fileItem.className = 'file-item';
                         fileItem.innerHTML = `
@@ -157,10 +193,8 @@
                         fileList.appendChild(fileItem);
                     }
                 });
-
                 updateMergeButtonState();
-                fileUpload.value = '';
-            });
+            }
 
             fileList.addEventListener('click', (event) => {
                 if (event.target.classList.contains('remove-btn')) {
@@ -191,7 +225,7 @@
                         content: fileContents[index]
                     }));
 
-                    const response = await fetch('http://localhost:3030/merge', {
+                    const response = await fetch('/merge', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

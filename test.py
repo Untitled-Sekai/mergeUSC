@@ -1,17 +1,17 @@
 import requests
 import json
 
-with open('example/raputa.usc', 'r') as f1, open('example/a.usc', 'r') as f2:
+with open('example/example.usc', 'r') as f1, open('example/example2.usc', 'r') as f2:
     usc1 = json.load(f1)
     usc2 = json.load(f2)
 
 client_files = [
     {
-        "filename": "raputa.usc",
+        "filename": "example.usc",
         "content": json.dumps(usc1)
     },
     {
-        "filename": "a.usc",
+        "filename": "example2.usc",
         "content": json.dumps(usc2)
     }
 ]
